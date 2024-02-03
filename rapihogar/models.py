@@ -61,6 +61,7 @@ class Company(models.Model):
         verbose_name_plural = _('Empresas')
 
 
+### 2. Modelo de técnico ###
 class Tecnico(models.Model):
     first_name = models.CharField(
         max_length=100,

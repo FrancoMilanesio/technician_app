@@ -13,6 +13,6 @@ router.register(r'company', CompanyViewSet, basename='company')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('technical/', ListOfTechniciansAPIView.as_view()),
-    path('technical/report/', TechniciansReportAPIView.as_view()),
+    path('technical/', ListOfTechniciansAPIView.as_view(), name='technical-list'),
+    path('technical/report/', TechniciansReportAPIView.as_view(), name='technicians_report'),
 ]

@@ -6,7 +6,7 @@ from rapihogar.models import (
 )
 import random
 
-
+### 4. Comando para generar pedidos ###
 class Command(BaseCommand):
     help = 'Generar N pedidos'
 

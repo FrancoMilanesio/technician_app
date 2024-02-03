@@ -94,6 +94,17 @@ def get_technicians_list() -> list[dict]:
 
 
 def get_technicians_report() -> dict:
+    """
+    The `get_technicians_report` function calculates the average amount charged by technicians,
+    identifies technicians who charged less than the average, and determines the technician with the
+    lowest and highest charges.
+    :return: The function `get_technicians_report` returns a dictionary containing the following
+    information:
+    - 'average_amount' (average amount charged by all technicians),
+    - 'less_than_average' (list of technicians who charged less than the average),
+    - 'highest_amount' (technician who charged the highest amount), and
+    - 'lowest_amount' (technician who charged the lowest amount).
+    """
     technicians_list_data = get_technicians_list()
 
     # Monto promedio cobrado por todos los técnicos

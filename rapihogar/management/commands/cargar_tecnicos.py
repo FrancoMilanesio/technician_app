@@ -34,7 +34,7 @@ technicians = [
 ]
 
 
-
+### 2. Modelo de técnico ###
 class Command(BaseCommand):
     help = 'Cargar 5 técnicos'
 
