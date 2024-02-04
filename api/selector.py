@@ -20,13 +20,16 @@ from rapihogar.models import (
 
 def get_technicians_list() -> list[dict]:
     """
-    The function `get_technicians_list` calculates the payment for technicians based on the number of
-    hours worked and applies discounts according to a given table.
-    :return: a list of dictionaries. Each dictionary represents a technician and contains the following
-    information: 'nombre_completo' (full name of the technician), 'horas_trabajadas' (total hours worked
-    by the technician), 'total_cobrar' (total amount to be charged to the technician), and
-    'cantidad_pedidos' (quantity of orders completed by the technician).
+    The function `get_technicians_list` calculates the total amount to be paid to technicians based on
+    the number of hours worked and applies discounts according to a given table.
+    :return: The function `get_technicians_list()` returns a list of dictionaries. Each dictionary
+    represents a technician and contains the following information:
+    - 'full_name' (full name of the technician),
+    - 'total_hours_worked' (total number of hours worked by the technician),
+    - 'hours_worked_total_amount' (total amount to be paid to the technician), and
+    - 'orders_cuantity' (total number of orders assigned to the technician).
     """
+    
     """
     Cálculo de Pago según la siguiente tabla:
 
@@ -47,7 +50,8 @@ def get_technicians_list() -> list[dict]:
     # Obtener los datos agregados
     technicians_hours_worked = Tecnico.objects.annotate(
         total_hours_worked=Sum('pedido__hours_worked'),
-        orders_cuantity=Count('pedido')
+        orders_cuantity=Count('pedido'),
+        technicians_category=F('category')
     )
 
     # Calcular el pago según la tabla dada
@@ -82,10 +86,11 @@ def get_technicians_list() -> list[dict]:
     # Obtener datos finales
     results = [
         {
-            'nombre_completo': technical.full_name,
-            'horas_trabajadas': technical.total_hours_worked,
-            'total_cobrar': technical.hours_worked_total_amount,
-            'cantidad_pedidos': technical.orders_cuantity
+            'full_name': technical.full_name,
+            'category': technical.technicians_category,
+            'total_hours_worked': technical.total_hours_worked,
+            'hours_worked_total_amount': technical.hours_worked_total_amount,
+            'orders_cuantity': technical.orders_cuantity
         }
         for technical in technicians_data
     ]
@@ -108,16 +113,16 @@ def get_technicians_report() -> dict:
     technicians_list_data = get_technicians_list()
 
     # Monto promedio cobrado por todos los técnicos
-    average_amount = sum([technical['total_cobrar'] for technical in technicians_list_data]) / len(technicians_list_data)
+    average_amount = sum([technical['hours_worked_total_amount'] for technical in technicians_list_data]) / len(technicians_list_data)
 
     # Datos de todos los técnicos que cobraron menos que el promedio
-    less_than_average = [technical for technical in technicians_list_data if technical['total_cobrar'] < average_amount]
+    less_than_average = [technical for technical in technicians_list_data if technical['hours_worked_total_amount'] < average_amount]
 
     # El último trabajador ingresado que cobró el monto más bajo
-    lowest_amount = sorted(technicians_list_data, key=lambda x: x['total_cobrar'])[0]
+    lowest_amount = sorted(technicians_list_data, key=lambda x: x['hours_worked_total_amount'])[0]
 
     # El último trabajador ingresado que cobró el monto más alto
-    highest_amount = sorted(technicians_list_data, key=lambda x: x['total_cobrar'], reverse=True)[0]
+    highest_amount = sorted(technicians_list_data, key=lambda x: x['hours_worked_total_amount'], reverse=True)[0]
     
     return {
         'average_amount': average_amount,

@@ -76,7 +76,7 @@ class ListOfTechniciansAPIViewTestCase(APITestCase):
         self.assertTrue(len(technicians_list) > 0)
 
         # Asegurar de que la lista contiene las claves esperadas
-        expected_keys = {'nombre_completo', 'horas_trabajadas', 'total_cobrar', 'cantidad_pedidos'}
+        expected_keys = {'full_name', 'category', 'total_hours_worked', 'hours_worked_total_amount', 'orders_cuantity'}
         for technician in technicians_list:
             self.assertTrue(expected_keys.issubset(technician.keys()))
 
@@ -87,25 +87,25 @@ class ListOfTechniciansAPIViewTestCase(APITestCase):
 
         # Asegurar de que la lista no esté vacía y contenga las claves esperadas
         self.assertTrue(len(technicians_list) > 0)
-        expected_keys = {'nombre_completo', 'horas_trabajadas', 'total_cobrar', 'cantidad_pedidos'}
+        expected_keys = {'full_name', 'category', 'total_hours_worked', 'hours_worked_total_amount', 'orders_cuantity'}
         for technician in technicians_list:
             self.assertTrue(expected_keys.issubset(technician.keys()))
 
         # Asegurar de que el monto total a cobrar sea mayor o igual a 1
         for technician in technicians_list:
-            self.assertTrue(technician['total_cobrar'] >= 1)
+            self.assertTrue(technician['hours_worked_total_amount'] >= 1)
         
         # Asegurar de que las horas trabajadas sean mayores o iguales a 1
         for technician in technicians_list:
-            self.assertTrue(technician['horas_trabajadas'] >= 1)
+            self.assertTrue(technician['total_hours_worked'] >= 1)
         
         # Asegurar de que la cantidad de pedidos sea mayor o igual a 1
         for technician in technicians_list:
-            self.assertTrue(technician['cantidad_pedidos'] >= 1)
+            self.assertTrue(technician['orders_cuantity'] >= 1)
 
         # Asegurar de que el nombre completo no esté vacío
         for technician in technicians_list:
-            self.assertTrue(technician['nombre_completo'])
+            self.assertTrue(technician['full_name'])
 
 
 class TechniciansReportAPIViewTestCase(APITestCase):
@@ -143,7 +143,7 @@ class TechniciansReportAPIViewTestCase(APITestCase):
         self.assertTrue(expected_keys.issubset(report_data.keys()))
 
         # Asegurar que los datos en 'less_than_average', 'highest_amount', y 'lowest_amount' contengan las claves adecuadas
-        list_keys = {'nombre_completo', 'horas_trabajadas', 'total_cobrar', 'cantidad_pedidos'}
+        list_keys = {'full_name', 'total_hours_worked', 'hours_worked_total_amount', 'orders_cuantity'}
         for key in ['less_than_average', 'highest_amount', 'lowest_amount']:
             if isinstance(report_data[key], list) and report_data[key]:  # Asegurar que sea una lista no vacía antes de acceder al índice 0
                 self.assertTrue(list_keys.issubset(report_data[key][0].keys()))

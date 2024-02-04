@@ -24,12 +24,12 @@ technicians = [
     {
         'first_name': 'Carlos',
         'last_name': 'Gonzalez',
-        'category': 'Electricista'
+        'category': 'Gasista'
     },
     {
         'first_name': 'Jose',
         'last_name': 'Rodriguez',
-        'category': 'Plomero'
+        'category': 'Pintor'
     }
 ]
 

@@ -32,7 +32,8 @@ class Command(BaseCommand):
                 Pedido.objects.create(
                     client=client,
                     hours_worked=hours_worked,
-                    technician=technical
+                    technician=technical,
+                    type_request=random.choice([0, 1])
                 )
 
             self.stdout.write(self.style.SUCCESS(f'Se generaron {order_quantity} pedidos exitosamente.'))
