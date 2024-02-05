@@ -2,7 +2,8 @@ from django.core.management.base import BaseCommand
 from rapihogar.models import (
     User,
     Tecnico,
-    Pedido
+    Pedido,
+    Scheme
 )
 import random
 
@@ -23,17 +24,20 @@ class Command(BaseCommand):
         if order_quantity in range(1, 101):
             technicians = Tecnico.objects.all()
             clients = User.objects.filter(is_active=True)
+            scheme = Scheme.objects.all()
 
             for _ in range(order_quantity):
                 technical = random.choice(technicians)
                 client = random.choice(clients)
                 hours_worked = random.randint(1, 10)
+                scheme = random.choice(scheme)
 
                 Pedido.objects.create(
                     client=client,
                     hours_worked=hours_worked,
                     technician=technical,
-                    type_request=random.choice([0, 1])
+                    type_request=random.choice([0, 1]),
+                    scheme=scheme,
                 )
 
             self.stdout.write(self.style.SUCCESS(f'Se generaron {order_quantity} pedidos exitosamente.'))

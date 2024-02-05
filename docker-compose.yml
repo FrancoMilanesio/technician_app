@@ -1,6 +1,14 @@
 version: "3"
 
 services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: mydatabaseuser
+      POSTGRES_PASSWORD: mydatabasepassword
+    ports:
+      - "5432:5432"
   nginx:
     build: ./nginx
     ports:
@@ -17,4 +25,5 @@ services:
       - "8000:8000"
     expose:
       - 8000
-
+    depends_on:
+      - db

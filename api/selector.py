@@ -1,3 +1,5 @@
+from typing import Iterable
+from django.db import transaction
 from django.db.models import (
     Sum, 
     Count, 
@@ -14,7 +16,9 @@ from django.db.models import (
 from rapihogar.models import (
     Company, 
     Tecnico,
-    Pedido
+    Pedido,
+    Scheme,
+    User
 )
 
 
@@ -51,7 +55,8 @@ def get_technicians_list() -> list[dict]:
     technicians_hours_worked = Tecnico.objects.annotate(
         total_hours_worked=Sum('pedido__hours_worked'),
         orders_cuantity=Count('pedido'),
-        technicians_category=F('category')
+        technicians_category=F('category'),
+        technicians_pk=F('pk')
     )
 
     # Calcular el pago según la tabla dada
@@ -86,9 +91,10 @@ def get_technicians_list() -> list[dict]:
     # Obtener datos finales
     results = [
         {
+            'id': technical.technicians_pk,
             'full_name': technical.full_name,
             'category': technical.technicians_category,
-            'total_hours_worked': technical.total_hours_worked,
+            'total_hours_worked': technical.total_hours_worked if technical.total_hours_worked else 0,
             'hours_worked_total_amount': technical.hours_worked_total_amount,
             'orders_cuantity': technical.orders_cuantity
         }
@@ -118,17 +124,86 @@ def get_technicians_report() -> dict:
     # Datos de todos los técnicos que cobraron menos que el promedio
     less_than_average = [technical for technical in technicians_list_data if technical['hours_worked_total_amount'] < average_amount]
 
+    sorted_tech_list = sorted(technicians_list_data, key=lambda tech: tech["id"], reverse=True)
+
     # El último trabajador ingresado que cobró el monto más bajo
-    lowest_amount = sorted(technicians_list_data, key=lambda x: x['hours_worked_total_amount'])[0]
+    lowest_amount = min(sorted_tech_list, key=lambda tech: tech["hours_worked_total_amount"]) #sorted(technicians_list_data, key=lambda x: (x['id'], x['hours_worked_total_amount']))[0]
 
     # El último trabajador ingresado que cobró el monto más alto
-    highest_amount = sorted(technicians_list_data, key=lambda x: x['hours_worked_total_amount'], reverse=True)[0]
+    highest_amount = max(technicians_list_data, key=lambda tech: tech["hours_worked_total_amount"]) #sorted(technicians_list_data, key=lambda x: (x['id'], x['hours_worked_total_amount']), reverse=True)[0]
     
     return {
-        'average_amount': average_amount,
+        'average_amount': round(average_amount, 2),
         'less_than_average': less_than_average,
         'highest_amount': highest_amount,
         'lowest_amount': lowest_amount
     }
     
 
+def get_orders() -> Iterable[Pedido]:
+    """
+    The `get_orders` function returns all orders in the database.
+    :return: The function `get_orders` returns a QuerySet containing all orders in the database.
+    """
+    return Pedido.objects.all().order_by('-id')
+
+
+def update_order(order_id: int, client_id: int, technician: str, hours_worked: int, type_request: int, scheme_id: int) -> None:
+    """
+    The function updates an order with the given order ID, client ID, technician ID, hours worked, and
+    type of request.
+    
+    :param order_id: The order_id parameter is an integer that represents the unique identifier of the
+    order that needs to be updated
+    :type order_id: int
+    :param client_id: The client_id parameter is an integer that represents the ID of the client
+    associated with the order
+    :type client_id: int
+    :param technician_id: The `technician_id` parameter is an integer that represents the ID of the
+    technician assigned to the order
+    :type technician_id: int
+    :param hours_worked: The parameter "hours_worked" represents the number of hours worked on the order
+    :type hours_worked: int
+    :param type_request: The parameter `type_request` is an integer that represents the type of request
+    for the order. The specific values and their meanings would depend on the context of your
+    application. You would need to define and document the possible values for `type_request` in your
+    application
+    :type type_request: int
+    :return: the updated `pedido` object.
+    """
+    
+    with transaction.atomic():
+        new_type_request = Pedido.SOLICITUD if type_request == 0 else Pedido.PEDIDO
+        pedido = Pedido.objects.get(id=order_id)
+        pedido.client_id = client_id
+        pedido.technician_id = technician
+        pedido.hours_worked = hours_worked
+        pedido.type_request = new_type_request
+        pedido.scheme_id = scheme_id
+        pedido.save()
+
+    return pedido
+
+
+def get_technicians() -> Iterable[Tecnico]:
+    """
+    The `get_technicians` function returns all technicians in the database.
+    :return: The function `get_technicians` returns a QuerySet containing all technicians in the database.
+    """
+    return Tecnico.objects.all()
+
+
+def get_clients() -> Iterable[User]:
+    """
+    The `get_clients` function returns all clients in the database.
+    :return: The function `get_clients` returns a QuerySet containing all clients in the database.
+    """
+    return User.objects.all()
+
+
+def get_schemas() -> Iterable[Scheme]:
+    """
+    The `get_schemas` function returns all schemas in the database.
+    :return: The function `get_schemas` returns a QuerySet containing all schemas in the database.
+    """
+    return Scheme.objects.all()

@@ -4,7 +4,12 @@ from django.urls import path, include
 from .views import (
     CompanyViewSet, 
     ListOfTechniciansAPIView,
-    TechniciansReportAPIView
+    TechniciansReportAPIView,
+    OrdersAPIView,
+    OrderUpdateAPIView,
+    ListTechniciansAPIView,
+    ListClientsAPIView,
+    SchemasListAPIView
 )
 
 router = routers.DefaultRouter()
@@ -16,4 +21,9 @@ urlpatterns = [
     #path('login/', include('rest_framework.urls', namespace='rest_framework')),
     path('technical/', ListOfTechniciansAPIView.as_view(), name='technical-list'),
     path('technical/report/', TechniciansReportAPIView.as_view(), name='technicians_report'),
+    path('orders/', OrdersAPIView.as_view(), name='orders-list'),
+    path('order/update/', OrderUpdateAPIView.as_view(), name='order-update'),
+    path('technicians/list/', ListTechniciansAPIView.as_view(), name='technicians-list'),
+    path('clients/list/', ListClientsAPIView.as_view(), name='clients-list'),
+    path('schemas/', SchemasListAPIView.as_view(), name='schemas-list')
 ]

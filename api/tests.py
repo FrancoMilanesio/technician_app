@@ -1,6 +1,7 @@
 import json
-from api.selector import get_technicians_list
-from rapihogar.models import User, Tecnico, Pedido
+from api.selector import get_orders, get_technicians_list
+from api.views import OrderUpdateAPIView, OrdersSerializer
+from rapihogar.models import User, Tecnico, Pedido, Scheme
 from django.urls import reverse
 
 from rest_framework.authtoken.models import Token
@@ -150,3 +151,134 @@ class TechniciansReportAPIViewTestCase(APITestCase):
 
         # Asegurar que el monto promedio sea mayor o igual a 1
         self.assertTrue(report_data['average_amount'] >= 1)
+
+
+class OrdersAPIViewTest(APITestCase):
+    def setUp(self):
+        self.username = "user_test"
+        self.email = "test@rapihigar.com"
+        self.password = "Rapi123"
+        self.user = User.objects.create_user(self.username, self.email, self.password)
+        self.token = Token.objects.create(user=self.user)
+        self.api_authentication()
+
+        technician = Tecnico.objects.create(
+            first_name='John',
+            last_name='Doe',
+            category='Plomero'
+        )
+        Pedido.objects.create(
+            client=self.user,
+            hours_worked=20,
+            technician=technician
+        )
+
+    def api_authentication(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+
+    def test_get_orders(self):
+        # Realiza una solicitud GET a la API
+        response = self.client.get('/api/orders/')
+
+        # Verifica que la respuesta tenga un código de estado 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Obtiene los datos de la respuesta
+        orders_data = response.data
+
+        # Obtiene todos los pedidos de la base de datos
+        all_orders = get_orders()
+
+        # Serializa los objetos Pedido
+        serializer = OrdersSerializer(all_orders, many=True)
+
+        # Verifica que los datos de la respuesta sean iguales a los datos serializados
+        self.assertEqual(orders_data, serializer.data)
+
+
+class OrderUpdateAPIViewTest(APITestCase):
+    maxDiff = None
+
+    def setUp(self):
+        self.username = "user_test"
+        self.email = "test@rapihigar.com"
+        self.password = "Rapi123"
+        self.user = User.objects.create_user(self.username, self.email, self.password)
+        self.token = Token.objects.create(user=self.user)
+        self.api_authentication()
+
+        self.technician = Tecnico.objects.create(
+            first_name='John',
+            last_name='Doe',
+            category='Plomero'
+        )
+        self.scheme = Scheme.objects.create(name='Scheme 1')
+
+    def api_authentication(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        
+    def test_update_order_success(self):
+        # Crear un pedido para probar la función
+        order = Pedido.objects.create(
+            client=self.user,
+            hours_worked=20,
+            technician=self.technician,
+            type_request=1
+        )
+
+        # Preparar los datos para la solicitud PUT
+        data = {
+            'order_id': order.id,
+            'client_id': self.user.id,
+            'technician': self.technician.id,
+            'hours_worked': 10,
+            'type_request': 0,
+            'scheme_id': self.scheme.id
+        }
+
+        # Realizar una solicitud PUT a la API
+        response = self.client.put('/api/order/update/', data, format='json')
+
+        # Verificar que la respuesta tenga un código de estado 200 OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verificar que el pedido fue actualizado correctamente
+        updated_order = Pedido.objects.get(id=order.id)
+        self.assertEqual(updated_order.technician, self.technician)
+        self.assertEqual(updated_order.hours_worked, 10)
+        self.assertEqual(updated_order.type_request, 0)
+        self.assertEqual(updated_order.scheme, self.scheme)
+
+        # Verificar que la respuesta contiene los datos esperados
+        expected_data = OrdersSerializer(updated_order).data
+        self.assertEqual(response.data, expected_data)
+
+    def test_update_order_invalid_data(self):
+        # Preparar datos inválidos para la solicitud PUT
+        invalid_data = {
+            'order_id': 'invalid',
+            'client_id': 'invalid',
+            'technician': 'invalid',
+            'hours_worked': 'invalid',
+            'type_request': 'invalid',
+            'scheme_id': 'invalid'
+        }
+
+        # Realizar una solicitud PUT a la API con datos inválidos
+        response = self.client.put('/api/order/update/', invalid_data)
+
+        # Verificar que la respuesta tenga un código de estado 400 Bad Request
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Verificar que la respuesta contiene los errores esperados
+        expected_error = {
+            'error': "{'order_id': [ErrorDetail(string='A valid integer is required.', code='invalid')], 'client_id': [ErrorDetail(string='A valid integer is required.', code='invalid')], 'technician': [ErrorDetail(string='A valid integer is required.', code='invalid')], 'hours_worked': [ErrorDetail(string='A valid integer is required.', code='invalid')], 'type_request': [ErrorDetail(string='A valid integer is required.', code='invalid')], 'scheme_id': [ErrorDetail(string='A valid integer is required.', code='invalid')]}"
+        }
+        self.assertEqual(response.data, expected_error)
+        
+    def tearDown(self):
+        # Eliminar todos los objetos de la base de datos
+        User.objects.all().delete()
+        Tecnico.objects.all().delete()
+        Scheme.objects.all().delete()
+        Pedido.objects.all().delete()
