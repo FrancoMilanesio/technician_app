@@ -46,6 +46,21 @@ docker exec -it test_web_1 python manage.py createsuperuser
 ```bash
 docker exec -it test_web_1 python manage.py test
 ```
+
+### Iniciar Frontend ###
+
+Dentro del directorio del proyecto, ejecuta el siguiente comando para instalar las dependencias:
+
+```bash
+npm install
+```
+
+Utilizar el siguiente comando para compilar el proyecto de React:
+
+```bash
+npm run build
+```
+
 # Tarea a realizar #
 Rapihogar necesita cargar las horas trabajadas por los técnicos para poder realizar la liquidación. Se pide:
 
