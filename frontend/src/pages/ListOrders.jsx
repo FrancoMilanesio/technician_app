@@ -129,7 +129,7 @@ export function ListOrders() {
       console.error("Error al actualizar el pedido:", error);
     }
   };
-  console.log(loading);
+
   const handleDeleteClick = (id) => () => {
     setRows(rows.filter((row) => row.id !== id));
   };

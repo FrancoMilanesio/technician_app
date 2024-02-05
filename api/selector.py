@@ -127,10 +127,10 @@ def get_technicians_report() -> dict:
     sorted_tech_list = sorted(technicians_list_data, key=lambda tech: tech["id"], reverse=True)
 
     # El último trabajador ingresado que cobró el monto más bajo
-    lowest_amount = min(sorted_tech_list, key=lambda tech: tech["hours_worked_total_amount"]) #sorted(technicians_list_data, key=lambda x: (x['id'], x['hours_worked_total_amount']))[0]
+    lowest_amount = min(sorted_tech_list, key=lambda tech: tech["hours_worked_total_amount"])
 
     # El último trabajador ingresado que cobró el monto más alto
-    highest_amount = max(technicians_list_data, key=lambda tech: tech["hours_worked_total_amount"]) #sorted(technicians_list_data, key=lambda x: (x['id'], x['hours_worked_total_amount']), reverse=True)[0]
+    highest_amount = max(technicians_list_data, key=lambda tech: tech["hours_worked_total_amount"])
     
     return {
         'average_amount': round(average_amount, 2),
