@@ -24,13 +24,13 @@ class Command(BaseCommand):
         if order_quantity in range(1, 101):
             technicians = Tecnico.objects.all()
             clients = User.objects.filter(is_active=True)
-            scheme = Scheme.objects.all()
+            selected_scheme = Scheme.objects.all()
 
             for _ in range(order_quantity):
                 technical = random.choice(technicians)
                 client = random.choice(clients)
                 hours_worked = random.randint(1, 10)
-                scheme = random.choice(scheme)
+                scheme = random.choice(selected_scheme)
 
                 Pedido.objects.create(
                     client=client,
